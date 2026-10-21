@@ -1,0 +1,21 @@
+import worker from "./src/worker.js";
+const call = async (body) => {
+  const r = await worker.fetch(new Request("https://x.dev/mcp", { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify(body) }));
+  return r.status === 202 ? { status: 202 } : await r.json();
+};
+const init = await call({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "t", version: "0" } } });
+console.log("init:", init.result.serverInfo.title, init.result.protocolVersion);
+console.log("notif:", JSON.stringify(await call({ jsonrpc: "2.0", method: "notifications/initialized" })));
+const list = await call({ jsonrpc: "2.0", id: 2, method: "tools/list" });
+console.log("tools:", list.result.tools.map((t) => t.name).join(", "));
+const s = await call({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "search_finch_agents", arguments: { query: "wallet", limit: 3 } } });
+console.log("search:", s.result.structuredContent.results.map((r) => `${r.name} | ${r.price} | ${r.run_url.slice(0, 70)}`).join("\n        "));
+const slug = s.result.structuredContent.results[0].slug;
+const g = await call({ jsonrpc: "2.0", id: 4, method: "tools/call", params: { name: "get_finch_agent", arguments: { slug } } });
+console.log("get:", g.result.structuredContent.name, "| summary chars", g.result.structuredContent.summary.length);
+const bad = await call({ jsonrpc: "2.0", id: 5, method: "tools/call", params: { name: "get_finch_agent", arguments: { slug: "nope" } } });
+console.log("bad slug isError:", bad.result.isError);
+const h = await call({ jsonrpc: "2.0", id: 6, method: "tools/call", params: { name: "how_to_call_finch_agents", arguments: {} } });
+console.log("how:", Object.keys(h.result.structuredContent).join(","));
+const root = await worker.fetch(new Request("https://x.dev/"));
+console.log("root:", root.status, (await root.text()).split("\n")[0]);
