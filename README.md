@@ -7,4 +7,4 @@ Tools:
 - `get_finch_agent(slug)` — full official description of one agent.
 - `how_to_call_finch_agents()` — how the user runs an agent in the browser, or connects the full Finch MCP.
 
-Data comes live from Finch's public catalog API; nothing is stored. Deployed as a Cloudflare Worker (`src/worker.js`). Test: `node test.mjs`.
+Data comes live from Finch's public catalog API; nothing is stored. Live endpoint: `https://finch-agent-catalog.finch-catalog-mcp.workers.dev/mcp` (streamable HTTP, no auth). Deployed as a Cloudflare Worker (`src/worker.js`). Test: `node test.mjs`.
