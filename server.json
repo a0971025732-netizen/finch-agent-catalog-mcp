@@ -4,7 +4,7 @@
   "title": "Finch Agent Catalog",
   "description": "No-auth search of Finch AI agents: crypto tracing, wallet risk, options, stock perps, resumes",
   "repository": {"url": "https://github.com/a0971025732-netizen/finch-agent-catalog-mcp", "source": "github"},
-  "version": "1.0.0",
+  "version": "1.1.0",
   "websiteUrl": "https://www.finchtech.ai/market/explore/agents",
   "remotes": [{"type": "streamable-http", "url": "https://finch-agent-catalog.finch-catalog-mcp.workers.dev/mcp"}]
 }
