@@ -152,12 +152,75 @@ async function handle(msg) {
   }
 }
 
+// A2A (Agent2Agent) front door: other agents send "I need X done" and get the matching Finch agents back.
+const STOP = new Set("the and for with from that this what which using use want need help can you get find have into about your our are how call calls week".split(" "));
+const words = (s) => (s.toLowerCase().match(/[a-z0-9&]+/g) || []).filter((w) => w.length > 2 && !STOP.has(w));
+const INTENT_WORDS = INTENTS.map(([name, slug, d]) => ({ slug, w: new Set([...words(name.replace(/_/g, " ")), ...words(d)]) }));
+
+async function recommend(text, limit = 3) {
+  const q = new Set(words(text));
+  const score = {};
+  for (const { slug, w } of INTENT_WORDS) {
+    let s = 0;
+    for (const t of q) if (w.has(t)) s++;
+    if (s) score[slug] = Math.max(score[slug] || 0, s);
+  }
+  const items = await finchSearch("");
+  let picks = Object.entries(score).sort((a, b) => b[1] - a[1]).map(([slug]) => items.find((x) => x.slug === slug)).filter(Boolean);
+  if (!picks.length) picks = await finchSearch(text);
+  return picks.slice(0, limit).map((a) => card(a, false));
+}
+
+function agentCard(origin) {
+  return {
+    protocolVersion: "0.3.0",
+    name: "Finch Agent Catalog",
+    description: "Tell it what you need done and it returns the matching specialist agents on the Finch marketplace (official description, price, free runs, run link): on-chain fund tracing and wallet risk (MistTrack by SlowMist), Hyperliquid US equity perps, wheel-strategy options, sector returns vs S&P 500, Singapore property, resume tailoring and job search, science and health research, code review, website growth audits, and AI phone booking. Read-only, no auth.",
+    url: `${origin}/a2a`,
+    preferredTransport: "JSONRPC",
+    version: "1.2.0",
+    provider: { organization: "Finch Agent Catalog (community)", url: "https://github.com/a0971025732-netizen/finch-agent-catalog-mcp" },
+    documentationUrl: "https://github.com/a0971025732-netizen/finch-agents",
+    capabilities: { streaming: false, pushNotifications: false },
+    defaultInputModes: ["text/plain"],
+    defaultOutputModes: ["text/plain", "application/json"],
+    skills: INTENTS.map(([name, , d]) => ({ id: name, name: name.replace(/_/g, " "), description: d, tags: words(name.replace(/_/g, " ")), examples: [] })),
+  };
+}
+
+async function a2aHandle(msg) {
+  const { id, method, params } = msg || {};
+  if (method !== "message/send") return { jsonrpc: "2.0", id: id ?? null, error: { code: -32601, message: `Method not supported: ${method}. Use message/send.` } };
+  const parts = params?.message?.parts || [];
+  const text = parts.filter((p) => (p.kind || p.type) === "text").map((p) => p.text).join(" ").slice(0, 1000);
+  if (!text.trim()) return { jsonrpc: "2.0", id, error: { code: -32602, message: "Send a text part describing the task." } };
+  const results = await recommend(text);
+  const lines = results.map((r, i) => `${i + 1}. ${r.name}: ${r.price}; ${r.free_runs}. Run: ${r.run_url}`).join("\n");
+  return {
+    jsonrpc: "2.0", id,
+    result: {
+      kind: "message", role: "agent", messageId: crypto.randomUUID(), contextId: params?.message?.contextId || crypto.randomUUID(),
+      parts: [
+        { kind: "text", text: `Finch agents for "${text.slice(0, 120)}":\n${lines}\nThe user runs one at its link (passkey or wallet sign-in), or connects the Finch MCP at ${MCP_URL}. Never ask for a private key.` },
+        { kind: "data", data: { results, finch_mcp: MCP_URL } },
+      ],
+    },
+  };
+}
+
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Expose-Headers": "Mcp-Session-Id" };
 
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+    if (url.pathname === "/.well-known/agent-card.json" || url.pathname === "/.well-known/agent.json") return Response.json(agentCard(url.origin), { headers: CORS });
+    if (url.pathname === "/a2a") {
+      if (request.method !== "POST") return Response.json(agentCard(url.origin), { headers: CORS });
+      let m;
+      try { m = await request.json(); } catch { return Response.json({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } }, { status: 400, headers: CORS }); }
+      try { return Response.json(await a2aHandle(m), { headers: CORS }); } catch (e) { return Response.json({ jsonrpc: "2.0", id: m?.id ?? null, error: { code: -32603, message: String(e.message || e) } }, { headers: CORS }); }
+    }
     if (url.pathname !== "/mcp") {
       return new Response(`Finch Agent Catalog MCP (read-only, no auth). Endpoint: ${url.origin}/mcp\nFull Finch MCP: ${MCP_URL}\n`, { headers: { "content-type": "text/plain", ...CORS } });
     }
