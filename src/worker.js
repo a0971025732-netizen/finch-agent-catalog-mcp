@@ -29,6 +29,35 @@ const TOOLS = [
   },
 ];
 
+// Task-named tools, so agents that search tools by capability find the matching Finch agent.
+// Descriptions paraphrase each agent's official listing only.
+const INTENTS = [
+  ["trace_crypto_funds", "agent-3dcaa57f-b8b8-5c78-9300-c972e5a764bc", "Trace where crypto funds went from a wallet address or transaction hash (fund flows, transaction relationships), using MistTrack by SlowMist on Finch."],
+  ["check_wallet_address_risk", "agent-3dcaa57f-b8b8-5c78-9300-c972e5a764bc", "Check the risk of a crypto wallet address or transaction with MistTrack by SlowMist on Finch."],
+  ["analyze_hyperliquid_us_stock_perp", "agent-eee98da7-f7b3-471b-b0e4-fdd2a617e436", "Analyze U.S. equity perpetuals on Hyperliquid: trend, volume, open interest, funding rate and news, using Maneki AI on Finch."],
+  ["screen_wheel_strategy_options", "agent-f7c9c94a-961b-4159-a6ba-6b7852e84264", "Screen cash-secured puts or covered calls on a US stock (options expiring in 3 to 9 days) and get an OPEN or SKIP decision, using the Wheel-strategy Option Desk on Finch."],
+  ["compare_sector_returns_vs_sp500", "agent-c2c55754-a942-508f-a362-d576724809f7", "Compare sector or asset returns and volatility against the S&P 500 from public financial data, using Powerdrill Finance Data Agent on Finch."],
+  ["monitor_market_trading_setups", "agent-ec78b963-2b13-4f07-bc59-e29fc3fa68bd", "Report market conditions and potential trading setups for forex, crypto or stocks, using TrainFlow Nexus on Finch."],
+  ["assess_onchain_business", "agent-e96e9a01-50aa-4686-bd0e-1aa9cdfcf967", "Assess an on-chain business from verifiable operating data (token usage, revenue, customer signals) with an evidence-backed risk grade, using FlowCredit on Finch."],
+  ["analyze_singapore_condo", "agent-b3316156-4cab-47ba-8101-b07dc0266f14", "Analyze Singapore private residential property (condos, apartments, ECs): price trends, rental yields, project and district comparisons, using ChatProperty on Finch."],
+  ["tailor_resume_to_job", "agent-16945007-bd26-5b62-ad5f-bbe72b288e9b", "Tailor a resume to a job description with ATS keyword-match analysis, write a cover letter, or prepare for interviews, using LittlePinkPotato on Finch."],
+  ["find_job_openings", "agent-16945007-bd26-5b62-ad5f-bbe72b288e9b", "Find recent job openings (Singapore, China, Hong Kong, Australia, US, Canada, remote) ranked by fit, using LittlePinkPotato on Finch."],
+  ["research_brief_science_health", "agent-f81bcd4b-87fc-5c74-9327-fe0d452caff8", "Get a cited research brief from scientific papers, clinical trial records, drug and compound data, using Powerdrill Science & Health Research Agent on Finch."],
+  ["debug_or_review_code", "agent-6808d266-49a2-5eaf-bf6e-64e7f9ac99ff", "Debug code, write code, review implementations or produce technical documentation, using SuperClaw on Finch."],
+  ["audit_website_for_growth", "agent-4c3f1384-b6eb-56cd-9e92-f7d08bfc4433", "Audit a website's market positioning, messaging and conversion for global customer acquisition, using SPARK on Finch."],
+  ["book_appointment_by_phone", "agent-e98cbf4b-fe2f-5fff-9236-d2bfcbad2eed", "Have an AI place a real phone call to a restaurant, salon, clinic or hotel to book, reschedule or ask a question, using LifeClaw on Finch."],
+];
+const INTENT_SLUG = Object.fromEntries(INTENTS.map(([name, slug]) => [name, slug]));
+for (const [name, , description] of INTENTS) {
+  TOOLS.push({
+    name,
+    title: name.replace(/_/g, " "),
+    description: `${description} Returns the agent's official description, price, free runs, a run link and a ready-to-send request.`,
+    inputSchema: { type: "object", properties: { task: { type: "string", description: "Optional short description of what the user wants. Do not include private documents or secrets." } } },
+    annotations: { readOnlyHint: true, openWorldHint: true },
+  });
+}
+
 async function finchSearch(q) {
   const r = await fetch(`${FINCH}/api/market/search?kind=agent&q=${encodeURIComponent(q || "")}`, { cf: { cacheTtl: 300 } });
   if (!r.ok) throw new Error(`Finch catalog returned HTTP ${r.status}`);
@@ -90,6 +119,17 @@ async function callTool(name, args) {
       safety: "Never ask the user for a private key or seed phrase.",
     };
   }
+  if (INTENT_SLUG[name]) {
+    const items = await finchSearch("");
+    const a = items.find((x) => x.slug === INTENT_SLUG[name]);
+    if (!a) return { error: "This agent is not currently listed on Finch. Call search_finch_agents for alternatives." };
+    const task = (args.task || "").slice(0, 300);
+    return {
+      agent: card(a, true),
+      ready_to_send_request: task || "(describe the task in the agent's terms, e.g. paste the wallet address, ticker or job description on the run page)",
+      how_to_run: "Send the user the run_url (create a Finch account with a passkey or wallet, then send the request), or call it through the Finch MCP if it is connected. Details: how_to_call_finch_agents.",
+    };
+  }
   throw new Error(`Unknown tool: ${name}`);
 }
 
@@ -98,7 +138,7 @@ async function handle(msg) {
   if (id === undefined || id === null) return null; // notification
   try {
     if (method === "initialize") {
-      return { jsonrpc: "2.0", id, result: { protocolVersion: params?.protocolVersion || PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "finch-agent-catalog", title: "Finch Agent Catalog", version: "1.0.0" }, instructions: "Read-only catalog of agents on the Finch marketplace. Search by the user's task, then send the user the run_url or help them connect the full Finch MCP." } };
+      return { jsonrpc: "2.0", id, result: { protocolVersion: params?.protocolVersion || PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "finch-agent-catalog", title: "Finch Agent Catalog", version: "1.1.0" }, instructions: "Read-only catalog of agents on the Finch marketplace. Search by the user's task, then send the user the run_url or help them connect the full Finch MCP." } };
     }
     if (method === "ping") return { jsonrpc: "2.0", id, result: {} };
     if (method === "tools/list") return { jsonrpc: "2.0", id, result: { tools: TOOLS } };
