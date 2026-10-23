@@ -208,17 +208,28 @@ async function a2aHandle(msg) {
   };
 }
 
+// Anonymous daily usage counters: date|protocol|method|client. No request content is stored.
+async function bump(env, request, proto, what) {
+  if (!env || !env.USAGE) return;
+  const client = ((request.headers.get("user-agent") || "unknown").split(/[\/\s(]/)[0] || "unknown").toLowerCase().slice(0, 40);
+  const key = `${new Date().toISOString().slice(0, 10)}|${proto}|${what}|${client}`;
+  const n = Number((await env.USAGE.get(key)) || 0) + 1;
+  await env.USAGE.put(key, String(n), { expirationTtl: 60 * 60 * 24 * 120 });
+}
+
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Expose-Headers": "Mcp-Session-Id" };
 
 export default {
-  async fetch(request) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const track = (proto, what) => { try { ctx?.waitUntil(bump(env, request, proto, what).catch(() => {})); } catch {} };
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
     if (url.pathname === "/.well-known/agent-card.json" || url.pathname === "/.well-known/agent.json") return Response.json(agentCard(url.origin), { headers: CORS });
     if (url.pathname === "/a2a") {
       if (request.method !== "POST") return Response.json(agentCard(url.origin), { headers: CORS });
       let m;
       try { m = await request.json(); } catch { return Response.json({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } }, { status: 400, headers: CORS }); }
+      track("a2a", m?.method || "unknown");
       try { return Response.json(await a2aHandle(m), { headers: CORS }); } catch (e) { return Response.json({ jsonrpc: "2.0", id: m?.id ?? null, error: { code: -32603, message: String(e.message || e) } }, { headers: CORS }); }
     }
     if (url.pathname !== "/mcp") {
@@ -227,6 +238,10 @@ export default {
     if (request.method === "GET") return new Response("Use POST for MCP JSON-RPC.", { status: 405, headers: { Allow: "POST", ...CORS } });
     let body;
     try { body = await request.json(); } catch { return Response.json({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } }, { status: 400, headers: CORS }); }
+    for (const m of Array.isArray(body) ? body : [body]) {
+      if (m?.method === "initialize") track("mcp", "initialize");
+      else if (m?.method === "tools/call") track("mcp", `tools/call:${String(m.params?.name || "").slice(0, 60)}`);
+    }
     const batch = Array.isArray(body);
     const out = (await Promise.all((batch ? body : [body]).map(handle))).filter(Boolean);
     if (!out.length) return new Response(null, { status: 202, headers: CORS });

@@ -1,3 +1,7 @@
 name = "finch-agent-catalog"
 main = "src/worker.js"
 compatibility_date = "2026-10-01"
+
+[[kv_namespaces]]
+binding = "USAGE"
+id = "9cfccc2ae50a418abad1d9c3b5450bb8"
