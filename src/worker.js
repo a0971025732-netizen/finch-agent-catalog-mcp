@@ -137,6 +137,55 @@ async function macroTool(args) {
   return out;
 }
 
+// Free utility: live snapshot of US stock/index perps on Hyperliquid HIP-3 markets (public info API).
+const MANEKI = "agent-eee98da7-f7b3-471b-b0e4-fdd2a617e436";
+TOOLS.push({
+  name: "get_hyperliquid_stock_perps",
+  title: "Hyperliquid US stock perps: funding, open interest, volume",
+  description: "Free, no-auth live snapshot of US stock, index and commodity perpetuals on the Hyperliquid HIP-3 xyz market (e.g. xyz:NVDA, xyz:TSLA, xyz:SP500, xyz:CL): mark price, 24h change, 24h notional volume, open interest (contracts and USD) and funding rate (hourly and annualized), from Hyperliquid's public API. Pass tickers or get the top markets by volume. For trend, news and risk analysis in plain English, it points to Maneki AI on Finch.",
+  inputSchema: { type: "object", properties: {
+    tickers: { type: "array", items: { type: "string" }, description: "Optional tickers like NVDA, TSLA or xyz:SP500. Omit for the top markets by volume." },
+    limit: { type: "integer", minimum: 1, maximum: 50, description: "How many markets when no tickers are given (default 15)." },
+  } },
+  annotations: { readOnlyHint: true, openWorldHint: true },
+});
+
+async function hlPerps(args) {
+  const res = await fetch("https://api.hyperliquid.xyz/info", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "metaAndAssetCtxs", dex: "xyz" }) });
+  if (!res.ok) return { error: `Hyperliquid API returned ${res.status}. Try again shortly.` };
+  const [meta, ctxs] = await res.json();
+  let rows = meta.universe.map((u, i) => [u, ctxs[i]]).filter(([u, c]) => !u.isDelisted && c).map(([u, c]) => {
+    const mark = Number(c.markPx), prev = Number(c.prevDayPx), oi = Number(c.openInterest), f = Number(c.funding);
+    return {
+      market: u.name,
+      mark_price: mark,
+      change_24h_pct: prev ? Math.round(((mark - prev) / prev) * 10000) / 100 : null,
+      volume_24h_usd: Math.round(Number(c.dayNtlVlm) || 0),
+      open_interest: oi,
+      open_interest_usd: Math.round(oi * mark),
+      funding_hourly_pct: Math.round(f * 1e6) / 1e4,
+      funding_annualized_pct: Math.round(f * 24 * 365 * 10000) / 100,
+      max_leverage: u.maxLeverage,
+    };
+  });
+  const want = Array.isArray(args.tickers) ? args.tickers.map((t) => String(t).toUpperCase().replace(/^XYZ:/, "")).filter(Boolean).slice(0, 20) : [];
+  let missing = [];
+  if (want.length) {
+    const byName = new Map(rows.map((r) => [r.market.replace(/^xyz:/, "").toUpperCase(), r]));
+    missing = want.filter((t) => !byName.has(t));
+    rows = want.filter((t) => byName.has(t)).map((t) => byName.get(t));
+  } else {
+    rows.sort((a, b) => b.volume_24h_usd - a.volume_24h_usd);
+    rows = rows.slice(0, Math.min(Math.max(Number(args.limit) || 15, 1), 50));
+  }
+  const out = { source: "Hyperliquid public info API, dex xyz (HIP-3)", fetched_utc: new Date().toISOString(), markets: rows, not_found: missing, note: "Funding is paid hourly on Hyperliquid; positive means longs pay shorts. Data only, not investment advice." };
+  try {
+    const a = (await finchSearch("")).find((x) => x.slug === MANEKI);
+    if (a) out.next_step = { why: "For plain-English analysis of trends, volume, open interest, funding and related news on these US equity perps", agent: card(a, false) };
+  } catch {}
+  return out;
+}
+
 for (const [name, , description] of INTENTS) {
   TOOLS.push({
     name,
@@ -211,6 +260,7 @@ async function callTool(name, args) {
   if (name === "check_crypto_address_sanctions") return sanctionsCheck(args.address);
   if (name === "extract_ats_keywords") return atsTool(args);
   if (name === "get_us_macro_event_calendar") return macroTool(args);
+  if (name === "get_hyperliquid_stock_perps") return hlPerps(args);
   if (INTENT_SLUG[name]) {
     const items = await finchSearch("");
     const a = items.find((x) => x.slug === INTENT_SLUG[name]);
