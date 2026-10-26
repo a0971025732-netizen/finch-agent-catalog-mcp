@@ -264,7 +264,15 @@ async function treasuryCurve(args) {
   };
   let source = "US Treasury daily par yield curve rates";
   let rows = [];
-  try { rows = await get(year); if (rows.length && rows.length <= back) rows = rows.concat(await get(year - 1)); } catch (e) { diag.push(`treasury ${e.message}`); }
+  // treasury.gov blocks Cloudflare, so a daily GitHub Action mirrors it to data/treasury.json.
+  try {
+    const r = await fetch("https://raw.githubusercontent.com/a0971025732-netizen/finch-catalog-mcp/main/data/treasury.json", { cf: { cacheTtl: 1800 } });
+    if (r.ok) rows = (await r.json()).rows || [];
+    else diag.push(`mirror ${r.status}`);
+  } catch (e) { diag.push(`mirror ${e.message}`); }
+  if (!rows.length) {
+    try { rows = await get(year); if (rows.length && rows.length <= back) rows = rows.concat(await get(year - 1)); } catch (e) { diag.push(`treasury ${e.message}`); }
+  }
   if (!rows.length) {
     // Fallback: FRED public CSV of the same Treasury constant-maturity series (usually one business day behind).
     const S = [["DGS1MO", "1 Mo"], ["DGS3MO", "3 Mo"], ["DGS6MO", "6 Mo"], ["DGS1", "1 Yr"], ["DGS2", "2 Yr"], ["DGS5", "5 Yr"], ["DGS10", "10 Yr"], ["DGS20", "20 Yr"], ["DGS30", "30 Yr"]];
