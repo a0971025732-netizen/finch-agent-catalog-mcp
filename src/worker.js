@@ -266,7 +266,7 @@ async function treasuryCurve(args) {
   let rows = [];
   // treasury.gov blocks Cloudflare, so a daily GitHub Action mirrors it to data/treasury.json.
   try {
-    const r = await fetch("https://raw.githubusercontent.com/a0971025732-netizen/finch-catalog-mcp/main/data/treasury.json", { cf: { cacheTtl: 1800 } });
+    const r = await fetch("https://raw.githubusercontent.com/a0971025732-netizen/finch-agent-catalog-mcp/main/data/treasury.json", { cf: { cacheTtl: 1800 } });
     if (r.ok) rows = (await r.json()).rows || [];
     else diag.push(`mirror ${r.status}`);
   } catch (e) { diag.push(`mirror ${e.message}`); }
