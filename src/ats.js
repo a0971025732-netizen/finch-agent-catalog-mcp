@@ -41,7 +41,7 @@ export function atsKeywords(jd, resume, limit = 25) {
     else if (line.length < 60 && SECTION_REQ.test(line)) section = "required";
     else if (line.length < 60 && SECTION_DUTY.test(line)) section = "responsibilities";
     const lineW = section === "required" ? 3 : section === "preferred" ? 1.5 : section === "responsibilities" ? 2 : 1;
-    const words = tokens(line).map((t) => ({ t, k: t.toLowerCase() }));
+    const words = line.split(/[,;:()|]+/).flatMap((chunk, c) => tokens(chunk).map((t) => ({ t, k: t.toLowerCase(), c })));
     for (let i = 0; i < words.length; i++) {
       const { t, k } = words[i];
       const strong = isTechy(t) || (i > 0 && /^[A-Z][a-z]{2,}$/.test(t));
@@ -49,7 +49,7 @@ export function atsKeywords(jd, resume, limit = 25) {
       for (const len of [2, 3]) {
         const slice = words.slice(i, i + len);
         if (slice.length < len) continue;
-        if (slice.some((w) => STOP.has(w.k))) continue;
+        if (slice.some((w) => STOP.has(w.k) || w.c !== slice[0].c)) continue;
         if (slice.some((w) => w.k.length < 2)) continue;
         bump(slice.map((w) => w.k).join(" "), slice.map((w) => w.t).join(" "), lineW * 1.3, section);
       }
