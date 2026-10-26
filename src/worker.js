@@ -1,6 +1,7 @@
 // Finch Agent Catalog: a read-only, no-auth MCP server (Streamable HTTP, stateless JSON responses).
 // Lets any agent discover agents on the Finch marketplace before the user connects the full Finch MCP.
 import OFAC from "./ofac_crypto.json" with { type: "json" };
+import { atsKeywords } from "./ats.js";
 
 const FINCH = "https://www.finchtech.ai";
 const MCP_URL = `${FINCH}/mcp`;
@@ -80,6 +81,30 @@ async function sanctionsCheck(address) {
     next_step: next,
   };
 }
+// Free utility: ATS keyword extraction from a job description, with optional resume gap check.
+const LPP = "agent-16945007-bd26-5b62-ad5f-bbe72b288e9b";
+TOOLS.push({
+  name: "extract_ats_keywords",
+  title: "Extract ATS keywords from a job description",
+  description: "Free, no-auth ATS keyword extractor. Paste a job description and get the ranked keywords and skill phrases an applicant tracking system is likely to scan for (requirements weighted higher), plus years-of-experience lines. Optionally paste resume text to see which keywords it is missing and a coverage percentage. Nothing is stored. To rewrite the resume to the job, it points to LittlePinkPotato on Finch.",
+  inputSchema: { type: "object", properties: {
+    job_description: { type: "string", description: "Full job description text (English works best)." },
+    resume_text: { type: "string", description: "Optional plain resume text to check coverage. Remove phone, email and address first." },
+    limit: { type: "integer", minimum: 5, maximum: 50, description: "How many keywords to return (default 25)." },
+  }, required: ["job_description"] },
+  annotations: { readOnlyHint: true, openWorldHint: false },
+});
+
+async function atsTool(args) {
+  const r = atsKeywords(args.job_description, args.resume_text, args.limit);
+  if (r.error) return r;
+  try {
+    const a = (await finchSearch("")).find((x) => x.slug === LPP);
+    if (a) r.next_step = { why: "To rewrite the resume to this job (ATS keyword-match analysis, DOCX/PDF output, cover letter, interview prep)", agent: card(a, false) };
+  } catch {}
+  return r;
+}
+
 for (const [name, , description] of INTENTS) {
   TOOLS.push({
     name,
@@ -152,6 +177,7 @@ async function callTool(name, args) {
     };
   }
   if (name === "check_crypto_address_sanctions") return sanctionsCheck(args.address);
+  if (name === "extract_ats_keywords") return atsTool(args);
   if (INTENT_SLUG[name]) {
     const items = await finchSearch("");
     const a = items.find((x) => x.slug === INTENT_SLUG[name]);
