@@ -15,7 +15,6 @@ Free utilities (no account, no key; each result also suggests the Finch agent th
 - `get_hyperliquid_stock_perps(tickers?, limit?)` — live funding, open interest and volume for US stock/index perps on Hyperliquid (HIP-3 xyz).
 - `calculate_singapore_stamp_duty(price_sgd, buyer, property_count)` — BSD and ABSD at current IRAS rates.
 - `get_us_treasury_yield_curve(compare_days?)` — latest US Treasury yield curve with change and 2y-10y / 3m-10y spreads.
-- `get_us_treasury_yield_curve(compare_days?)` — latest US Treasury yield curve with change and 2y-10y / 3m-10y spreads.
 
 The same catalog also speaks A2A: agent card at `/.well-known/agent-card.json`, `message/send` at `/a2a`.
 
