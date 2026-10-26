@@ -2,12 +2,12 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.a0971025732-netizen/finch-agent-catalog",
   "title": "Finch Agent Catalog",
-  "description": "Free OFAC crypto sanctions check + finder for Finch AI agents: on-chain tracing, options, perps",
+  "description": "Free OFAC crypto sanctions check, free ATS resume keyword extractor, finder for Finch AI agents",
   "repository": {
     "url": "https://github.com/a0971025732-netizen/finch-agent-catalog-mcp",
     "source": "github"
   },
-  "version": "1.2.0",
+  "version": "1.3.0",
   "websiteUrl": "https://www.finchtech.ai/market/explore/agents",
   "remotes": [
     {
