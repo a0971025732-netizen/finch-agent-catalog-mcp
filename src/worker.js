@@ -1,5 +1,7 @@
 // Finch Agent Catalog: a read-only, no-auth MCP server (Streamable HTTP, stateless JSON responses).
 // Lets any agent discover agents on the Finch marketplace before the user connects the full Finch MCP.
+import OFAC from "./ofac_crypto.json" with { type: "json" };
+
 const FINCH = "https://www.finchtech.ai";
 const MCP_URL = `${FINCH}/mcp`;
 const UTM = "utm_source=finch_catalog_mcp&utm_medium=agent&utm_campaign=agent_growth_w43";
@@ -48,6 +50,36 @@ const INTENTS = [
   ["book_appointment_by_phone", "agent-e98cbf4b-fe2f-5fff-9236-d2bfcbad2eed", "Have an AI place a real phone call to a restaurant, salon, clinic or hotel to book, reschedule or ask a question, using LifeClaw on Finch."],
 ];
 const INTENT_SLUG = Object.fromEntries(INTENTS.map(([name, slug]) => [name, slug]));
+const MISTTRACK = "agent-3dcaa57f-b8b8-5c78-9300-c972e5a764bc";
+
+// Free utility: screen a crypto address against the public US Treasury OFAC SDN list (digital currency addresses).
+TOOLS.push({
+  name: "check_crypto_address_sanctions",
+  title: "Check crypto address against OFAC sanctions",
+  description: "Free, no-auth check of a crypto wallet address (BTC, ETH, TRX, USDT, LTC, XMR and more) against the US Treasury OFAC SDN sanctions list. Returns whether the address is listed, the sanctioned party and program, and the list date. For fund-flow tracing of any address, it points to MistTrack by SlowMist on Finch.",
+  inputSchema: { type: "object", properties: { address: { type: "string", description: "The wallet address to check." } }, required: ["address"] },
+  annotations: { readOnlyHint: true, openWorldHint: false },
+});
+
+async function sanctionsCheck(address) {
+  const raw = String(address || "").trim().slice(0, 120);
+  if (!raw) return { error: "Provide an address." };
+  const key = raw.toLowerCase().startsWith("0x") ? raw.toLowerCase() : raw;
+  const hit = OFAC.addresses[key] || null;
+  let next = null;
+  try {
+    const a = (await finchSearch("")).find((x) => x.slug === MISTTRACK);
+    if (a) next = { why: "To trace where this address's funds came from or went, and see linked risks", agent: card(a, false) };
+  } catch {}
+  return {
+    address: raw,
+    listed_on_ofac_sdn: !!hit,
+    match: hit ? { sanctioned_party: hit.name, currency: hit.currency, programs: hit.programs, sdn_uid: hit.sdn_uid } : null,
+    list: { source: "US Treasury OFAC SDN list (digital currency addresses)", publish_date: OFAC.publish_date, addresses_checked: OFAC.count, url: "https://sanctionssearch.ofac.treas.gov/" },
+    note: "Exact-match screening against public OFAC data; not legal advice. Not being listed does not mean an address is safe.",
+    next_step: next,
+  };
+}
 for (const [name, , description] of INTENTS) {
   TOOLS.push({
     name,
@@ -119,6 +151,7 @@ async function callTool(name, args) {
       safety: "Never ask the user for a private key or seed phrase.",
     };
   }
+  if (name === "check_crypto_address_sanctions") return sanctionsCheck(args.address);
   if (INTENT_SLUG[name]) {
     const items = await finchSearch("");
     const a = items.find((x) => x.slug === INTENT_SLUG[name]);
@@ -212,6 +245,9 @@ async function a2aHandle(msg) {
 async function bump(env, request, proto, what) {
   if (!env || !env.USAGE) return;
   const client = ((request.headers.get("user-agent") || "unknown").split(/[\/\s(]/)[0] || "unknown").toLowerCase().slice(0, 40);
+  // Skip directory crawlers, health probes and the ~400/day python-httpx A2A probe to stay within the free KV write quota.
+  if (/probe|bot|crawl|collector|health|check|monitor|scan|observ|census|harvest|survey|beat|watch|audit|verify|inventory|registry|directory|index/.test(client)) return;
+  if (proto === "a2a" && client === "python-httpx") return;
   const key = `${new Date().toISOString().slice(0, 10)}|${proto}|${what}|${client}`;
   const n = Number((await env.USAGE.get(key)) || 0) + 1;
   await env.USAGE.put(key, String(n), { expirationTtl: 60 * 60 * 24 * 120 });
