@@ -186,6 +186,59 @@ async function hlPerps(args) {
   return out;
 }
 
+// Free utility: Singapore residential stamp duty (BSD + ABSD) per IRAS rates.
+const CHATPROPERTY = "agent-b3316156-4cab-47ba-8101-b07dc0266f14";
+const BSD_TIERS = [[180000, 0.01], [180000, 0.02], [640000, 0.03], [500000, 0.04], [1500000, 0.05], [Infinity, 0.06]];
+const ABSD = { citizen: [0, 0.2, 0.3], pr: [0.05, 0.3, 0.35], foreigner: [0.6, 0.6, 0.6], entity: [0.65, 0.65, 0.65] };
+TOOLS.push({
+  name: "calculate_singapore_stamp_duty",
+  title: "Singapore property stamp duty (BSD + ABSD) calculator",
+  description: "Free, no-auth calculator for Singapore residential property stamp duty using current IRAS rates: Buyer's Stamp Duty (BSD, rates from 15 Feb 2023) and Additional Buyer's Stamp Duty (ABSD, rates from 27 Apr 2023) by buyer profile (Singapore citizen, PR, foreigner or entity) and how many residential properties the buyer will own. Returns the tier-by-tier breakdown and total. For price, rent and yield analysis of a specific Singapore private condo, it points to ChatProperty on Finch.",
+  inputSchema: { type: "object", properties: {
+    price_sgd: { type: "number", description: "Purchase price or market value in SGD, whichever is higher." },
+    buyer: { type: "string", enum: ["citizen", "pr", "foreigner", "entity"], description: "Buyer profile." },
+    property_count: { type: "integer", minimum: 1, maximum: 10, description: "Which residential property this is for the buyer: 1 = first, 2 = second, 3 = third or more (default 1)." },
+  }, required: ["price_sgd", "buyer"] },
+  annotations: { readOnlyHint: true, openWorldHint: false },
+});
+
+async function sgStampDuty(args) {
+  const price = Number(args.price_sgd);
+  if (!(price > 0) || price > 1e10) return { error: "Provide price_sgd as a positive number in SGD." };
+  const rates = ABSD[args.buyer];
+  if (!rates) return { error: "buyer must be one of: citizen, pr, foreigner, entity." };
+  const nth = Math.min(Math.max(Math.floor(Number(args.property_count) || 1), 1), 3);
+  let left = price, bsd = 0;
+  const tiers = [];
+  for (const [band, rate] of BSD_TIERS) {
+    if (left <= 0) break;
+    const amt = Math.min(left, band);
+    tiers.push({ amount_sgd: amt, rate_pct: rate * 100, duty_sgd: Math.round(amt * rate * 100) / 100 });
+    bsd += amt * rate;
+    left -= amt;
+  }
+  bsd = Math.max(Math.floor(bsd + 1e-6), 1);
+  const absdRate = rates[nth - 1];
+  const absd = absdRate ? Math.max(Math.floor(price * absdRate + 1e-6), 1) : 0;
+  const out = {
+    price_sgd: price, buyer: args.buyer, property_count: nth === 3 ? "3 or more" : nth,
+    bsd_sgd: bsd, bsd_breakdown: tiers,
+    absd_rate_pct: absdRate * 100, absd_sgd: absd,
+    total_stamp_duty_sgd: bsd + absd,
+    rates_source: { bsd: "IRAS BSD residential rates on or after 15 Feb 2023", absd: "IRAS ABSD rates on or after 27 Apr 2023", url: "https://www.iras.gov.sg/taxes/stamp-duty/for-property/buying-or-acquiring-property" },
+    notes: [
+      "Duty is rounded down to the nearest dollar, minimum $1.",
+      "Nationals of the US, Switzerland, Liechtenstein, Norway and Iceland get the same ABSD treatment as Singapore citizens under free trade agreements; use buyer=citizen for them.",
+      "Remissions (e.g. married couples with at least one citizen buying a second home and selling the first) are not applied. Housing developers and trustees are not covered. Estimate only; IRAS is authoritative.",
+    ],
+  };
+  try {
+    const a = (await finchSearch("")).find((x) => x.slug === CHATPROPERTY);
+    if (a) out.next_step = { why: "For price, rent, yield and transaction analysis of a specific Singapore private condo (not HDB)", agent: card(a, false) };
+  } catch {}
+  return out;
+}
+
 for (const [name, , description] of INTENTS) {
   TOOLS.push({
     name,
@@ -261,6 +314,7 @@ async function callTool(name, args) {
   if (name === "extract_ats_keywords") return atsTool(args);
   if (name === "get_us_macro_event_calendar") return macroTool(args);
   if (name === "get_hyperliquid_stock_perps") return hlPerps(args);
+  if (name === "calculate_singapore_stamp_duty") return sgStampDuty(args);
   if (INTENT_SLUG[name]) {
     const items = await finchSearch("");
     const a = items.find((x) => x.slug === INTENT_SLUG[name]);
