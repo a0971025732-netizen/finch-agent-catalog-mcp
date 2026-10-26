@@ -239,6 +239,48 @@ async function sgStampDuty(args) {
   return out;
 }
 
+// Free utility: latest US Treasury par yield curve from the US Treasury's daily CSV.
+const POWERDRILL_FIN = "agent-c2c55754-a942-508f-a362-d576724809f7";
+TOOLS.push({
+  name: "get_us_treasury_yield_curve",
+  title: "US Treasury yield curve (latest, with change and spreads)",
+  description: "Free, no-auth latest US Treasury par yield curve (1 month to 30 years) from the US Treasury's official daily data, with the change versus N business days earlier and the 2y-10y and 3m-10y spreads (negative means inverted). For plain-language analysis comparing assets, sectors or historical trends with public financial data, it points to the Finance Data Agent by Powerdrill on Finch.",
+  inputSchema: { type: "object", properties: {
+    compare_days: { type: "integer", minimum: 1, maximum: 60, description: "Compare with this many business days earlier (default 5)." },
+  } },
+  annotations: { readOnlyHint: true, openWorldHint: true },
+});
+
+async function treasuryCurve(args) {
+  const back = Math.min(Math.max(Number(args.compare_days) || 5, 1), 60);
+  const year = new Date().getUTCFullYear();
+  const get = async (y) => {
+    const r = await fetch(`https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/${y}/all?type=daily_treasury_yield_curve&field_tdr_date_value=${y}&page&_format=csv`, { headers: { "user-agent": "Mozilla/5.0 finch-agent-catalog" } });
+    if (!r.ok) return [];
+    const lines = (await r.text()).trim().split(/\r?\n/);
+    const head = lines[0].split(",").map((h) => h.replace(/"/g, ""));
+    return lines.slice(1).map((l) => { const c = l.split(","); const o = { date: c[0] }; head.slice(1).forEach((h, i) => { o[h] = c[i + 1] === "" ? null : Number(c[i + 1]); }); return o; });
+  };
+  let rows = await get(year);
+  if (rows.length <= back) rows = rows.concat(await get(year - 1));
+  if (!rows.length) return { error: "US Treasury data is unavailable right now. Try again later." };
+  const [latest, prior] = [rows[0], rows[Math.min(back, rows.length - 1)]];
+  const tenors = Object.keys(latest).filter((k) => k !== "date");
+  const curve = tenors.filter((t) => latest[t] != null).map((t) => ({ tenor: t, yield_pct: latest[t], change_bp: prior[t] != null ? Math.round((latest[t] - prior[t]) * 100) : null }));
+  const sp = (a, b) => (latest[a] != null && latest[b] != null ? Math.round((latest[b] - latest[a]) * 100) : null);
+  const out = {
+    as_of: latest.date, compared_with: prior.date, curve,
+    spreads_bp: { "2y_10y": sp("2 Yr", "10 Yr"), "3m_10y": sp("3 Mo", "10 Yr") },
+    source: "US Treasury daily par yield curve rates", url: "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve",
+    note: "Negative spread means that part of the curve is inverted. Data only, not investment advice.",
+  };
+  try {
+    const a = (await finchSearch("")).find((x) => x.slug === POWERDRILL_FIN);
+    if (a) out.next_step = { why: "For a plain-language report comparing assets or sectors, or exploring historical trends with public financial data", agent: card(a, false) };
+  } catch {}
+  return out;
+}
+
 for (const [name, , description] of INTENTS) {
   TOOLS.push({
     name,
@@ -315,6 +357,7 @@ async function callTool(name, args) {
   if (name === "get_us_macro_event_calendar") return macroTool(args);
   if (name === "get_hyperliquid_stock_perps") return hlPerps(args);
   if (name === "calculate_singapore_stamp_duty") return sgStampDuty(args);
+  if (name === "get_us_treasury_yield_curve") return treasuryCurve(args);
   if (INTENT_SLUG[name]) {
     const items = await finchSearch("");
     const a = items.find((x) => x.slug === INTENT_SLUG[name]);
