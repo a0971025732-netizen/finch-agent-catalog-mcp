@@ -2,9 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.a0971025732-netizen/finch-agent-catalog",
   "title": "Finch Agent Catalog",
-  "description": "No-auth search of Finch AI agents: crypto tracing, wallet risk, options, stock perps, resumes",
-  "repository": {"url": "https://github.com/a0971025732-netizen/finch-agent-catalog-mcp", "source": "github"},
-  "version": "1.1.0",
+  "description": "Free OFAC crypto sanctions check + finder for Finch AI agents: on-chain tracing, options, perps",
+  "repository": {
+    "url": "https://github.com/a0971025732-netizen/finch-agent-catalog-mcp",
+    "source": "github"
+  },
+  "version": "1.2.0",
   "websiteUrl": "https://www.finchtech.ai/market/explore/agents",
-  "remotes": [{"type": "streamable-http", "url": "https://finch-agent-catalog.finch-catalog-mcp.workers.dev/mcp"}]
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://finch-agent-catalog.finch-catalog-mcp.workers.dev/mcp"
+    }
+  ]
 }
