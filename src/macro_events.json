@@ -1,0 +1,512 @@
+{
+ "as_of": "2026-10-26",
+ "note": "Official US Federal Reserve and BLS release schedules. Times are US Eastern; utc is precomputed. Schedules can change; check the source links.",
+ "events": [
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision",
+   "date_et": "2026-01-28",
+   "time_et": "14:00",
+   "utc": "2026-01-28T19:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision + Summary of Economic Projections",
+   "date_et": "2026-03-18",
+   "time_et": "14:00",
+   "utc": "2026-03-18T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision",
+   "date_et": "2026-04-29",
+   "time_et": "14:00",
+   "utc": "2026-04-29T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision + Summary of Economic Projections",
+   "date_et": "2026-06-17",
+   "time_et": "14:00",
+   "utc": "2026-06-17T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision",
+   "date_et": "2026-07-29",
+   "time_et": "14:00",
+   "utc": "2026-07-29T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision + Summary of Economic Projections",
+   "date_et": "2026-09-16",
+   "time_et": "14:00",
+   "utc": "2026-09-16T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision",
+   "date_et": "2026-10-28",
+   "time_et": "14:00",
+   "utc": "2026-10-28T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2026-11-06",
+   "time_et": "08:30",
+   "utc": "2026-11-06T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "October 2026"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2026-11-10",
+   "time_et": "08:30",
+   "utc": "2026-11-10T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "October 2026"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2026-11-13",
+   "time_et": "08:30",
+   "utc": "2026-11-13T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "October 2026"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2026-12-04",
+   "time_et": "08:30",
+   "utc": "2026-12-04T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "November 2026"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision + Summary of Economic Projections",
+   "date_et": "2026-12-09",
+   "time_et": "14:00",
+   "utc": "2026-12-09T19:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2026-12-10",
+   "time_et": "08:30",
+   "utc": "2026-12-10T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "November 2026"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2026-12-15",
+   "time_et": "08:30",
+   "utc": "2026-12-15T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "November 2026"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-01-08",
+   "time_et": "08:30",
+   "utc": "2027-01-08T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "December 2026"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-01-13",
+   "time_et": "08:30",
+   "utc": "2027-01-13T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "December 2026"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-01-14",
+   "time_et": "08:30",
+   "utc": "2027-01-14T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "December 2026"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision",
+   "date_et": "2027-01-27",
+   "time_et": "14:00",
+   "utc": "2027-01-27T19:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-02-05",
+   "time_et": "08:30",
+   "utc": "2027-02-05T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "January 2027"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-02-11",
+   "time_et": "08:30",
+   "utc": "2027-02-11T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "January 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-02-12",
+   "time_et": "08:30",
+   "utc": "2027-02-12T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "January 2027"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-03-05",
+   "time_et": "08:30",
+   "utc": "2027-03-05T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "February 2027"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-03-10",
+   "time_et": "08:30",
+   "utc": "2027-03-10T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "February 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-03-12",
+   "time_et": "08:30",
+   "utc": "2027-03-12T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "February 2027"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision + Summary of Economic Projections",
+   "date_et": "2027-03-17",
+   "time_et": "14:00",
+   "utc": "2027-03-17T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-04-02",
+   "time_et": "08:30",
+   "utc": "2027-04-02T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "March 2027"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-04-13",
+   "time_et": "08:30",
+   "utc": "2027-04-13T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "March 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-04-14",
+   "time_et": "08:30",
+   "utc": "2027-04-14T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "March 2027"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision",
+   "date_et": "2027-04-28",
+   "time_et": "14:00",
+   "utc": "2027-04-28T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-05-07",
+   "time_et": "08:30",
+   "utc": "2027-05-07T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "April 2027"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-05-12",
+   "time_et": "08:30",
+   "utc": "2027-05-12T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "April 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-05-13",
+   "time_et": "08:30",
+   "utc": "2027-05-13T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "April 2027"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-06-04",
+   "time_et": "08:30",
+   "utc": "2027-06-04T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "May 2027"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision + Summary of Economic Projections",
+   "date_et": "2027-06-09",
+   "time_et": "14:00",
+   "utc": "2027-06-09T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-06-10",
+   "time_et": "08:30",
+   "utc": "2027-06-10T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "May 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-06-11",
+   "time_et": "08:30",
+   "utc": "2027-06-11T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "May 2027"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-07-02",
+   "time_et": "08:30",
+   "utc": "2027-07-02T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "June 2027"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-07-14",
+   "time_et": "08:30",
+   "utc": "2027-07-14T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "June 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-07-15",
+   "time_et": "08:30",
+   "utc": "2027-07-15T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "June 2027"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision",
+   "date_et": "2027-07-28",
+   "time_et": "14:00",
+   "utc": "2027-07-28T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-08-06",
+   "time_et": "08:30",
+   "utc": "2027-08-06T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "July 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-08-10",
+   "time_et": "08:30",
+   "utc": "2027-08-10T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "July 2027"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-08-11",
+   "time_et": "08:30",
+   "utc": "2027-08-11T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "July 2027"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-09-03",
+   "time_et": "08:30",
+   "utc": "2027-09-03T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "August 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-09-10",
+   "time_et": "08:30",
+   "utc": "2027-09-10T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "August 2027"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-09-14",
+   "time_et": "08:30",
+   "utc": "2027-09-14T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "August 2027"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision + Summary of Economic Projections",
+   "date_et": "2027-09-15",
+   "time_et": "14:00",
+   "utc": "2027-09-15T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-10-08",
+   "time_et": "08:30",
+   "utc": "2027-10-08T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "September 2027"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-10-14",
+   "time_et": "08:30",
+   "utc": "2027-10-14T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "September 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-10-15",
+   "time_et": "08:30",
+   "utc": "2027-10-15T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "September 2027"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision",
+   "date_et": "2027-10-27",
+   "time_et": "14:00",
+   "utc": "2027-10-27T18:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-11-05",
+   "time_et": "08:30",
+   "utc": "2027-11-05T12:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "October 2027"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-11-10",
+   "time_et": "08:30",
+   "utc": "2027-11-10T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "October 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-11-12",
+   "time_et": "08:30",
+   "utc": "2027-11-12T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "October 2027"
+  },
+  {
+   "type": "jobs",
+   "event": "Employment Situation (nonfarm payrolls, unemployment rate)",
+   "date_et": "2027-12-03",
+   "time_et": "08:30",
+   "utc": "2027-12-03T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm",
+   "reference_period": "November 2027"
+  },
+  {
+   "type": "fomc",
+   "event": "FOMC rate decision + Summary of Economic Projections",
+   "date_et": "2027-12-08",
+   "time_et": "14:00",
+   "utc": "2027-12-08T19:00Z",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "type": "cpi",
+   "event": "Consumer Price Index (CPI)",
+   "date_et": "2027-12-10",
+   "time_et": "08:30",
+   "utc": "2027-12-10T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm",
+   "reference_period": "November 2027"
+  },
+  {
+   "type": "ppi",
+   "event": "Producer Price Index (PPI)",
+   "date_et": "2027-12-15",
+   "time_et": "08:30",
+   "utc": "2027-12-15T13:30Z",
+   "source": "https://www.bls.gov/schedule/news_release/ppi.htm",
+   "reference_period": "November 2027"
+  }
+ ]
+}

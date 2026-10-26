@@ -2,6 +2,7 @@
 // Lets any agent discover agents on the Finch marketplace before the user connects the full Finch MCP.
 import OFAC from "./ofac_crypto.json" with { type: "json" };
 import { atsKeywords } from "./ats.js";
+import MACRO from "./macro_events.json" with { type: "json" };
 
 const FINCH = "https://www.finchtech.ai";
 const MCP_URL = `${FINCH}/mcp`;
@@ -105,6 +106,37 @@ async function atsTool(args) {
   return r;
 }
 
+// Free utility: upcoming US macro events (FOMC decisions, CPI, PPI, jobs report) from official schedules.
+const MORGAN = "agent-f7c9c94a-961b-4159-a6ba-6b7852e84264";
+TOOLS.push({
+  name: "get_us_macro_event_calendar",
+  title: "Upcoming US macro events (FOMC, CPI, PPI, jobs report)",
+  description: "Free, no-auth calendar of scheduled US market-moving releases from the official Federal Reserve and BLS schedules: FOMC rate decisions, CPI, PPI and the Employment Situation (nonfarm payrolls). Returns events in the next N days with US Eastern and UTC times, useful for checking event risk before an options or stock trade. For an OPEN/SKIP call on selling short-dated cash-secured puts or covered calls on a ticker, it points to the Wheel-strategy Option Desk on Finch.",
+  inputSchema: { type: "object", properties: {
+    days: { type: "integer", minimum: 1, maximum: 120, description: "How many days ahead to look (default 14)." },
+    types: { type: "array", items: { type: "string", enum: ["fomc", "cpi", "ppi", "jobs"] }, description: "Optional filter by event type." },
+  } },
+  annotations: { readOnlyHint: true, openWorldHint: false },
+});
+
+async function macroTool(args) {
+  const days = Math.min(Math.max(Number(args.days) || 14, 1), 120);
+  const now = new Date();
+  const end = new Date(now.getTime() + days * 86400000);
+  const want = Array.isArray(args.types) && args.types.length ? new Set(args.types) : null;
+  const events = MACRO.events.filter((e) => {
+    const t = new Date(e.utc.replace("Z", ":00Z"));
+    return t >= now && t <= end && (!want || want.has(e.type));
+  });
+  const nextAny = MACRO.events.find((e) => new Date(e.utc.replace("Z", ":00Z")) >= now && (!want || want.has(e.type))) || null;
+  const out = { window_days: days, now_utc: now.toISOString(), events, next_event: nextAny, note: MACRO.note, schedule_as_of: MACRO.as_of, not_included: "Company earnings dates are not included." };
+  try {
+    const a = (await finchSearch("")).find((x) => x.slug === MORGAN);
+    if (a) out.next_step = { why: "For an OPEN/SKIP decision on selling 3-9 day cash-secured puts or covered calls on a US ticker, checking earnings, Fed decisions, economic data and news risk", agent: card(a, false) };
+  } catch {}
+  return out;
+}
+
 for (const [name, , description] of INTENTS) {
   TOOLS.push({
     name,
@@ -178,6 +210,7 @@ async function callTool(name, args) {
   }
   if (name === "check_crypto_address_sanctions") return sanctionsCheck(args.address);
   if (name === "extract_ats_keywords") return atsTool(args);
+  if (name === "get_us_macro_event_calendar") return macroTool(args);
   if (INTENT_SLUG[name]) {
     const items = await finchSearch("");
     const a = items.find((x) => x.slug === INTENT_SLUG[name]);
