@@ -261,9 +261,24 @@ async function treasuryCurve(args) {
     const head = lines[0].split(",").map((h) => h.replace(/"/g, ""));
     return lines.slice(1).map((l) => { const c = l.split(","); const o = { date: c[0] }; head.slice(1).forEach((h, i) => { o[h] = c[i + 1] === "" ? null : Number(c[i + 1]); }); return o; });
   };
-  let rows = await get(year);
-  if (rows.length <= back) rows = rows.concat(await get(year - 1));
-  if (!rows.length) return { error: "US Treasury data is unavailable right now. Try again later." };
+  let source = "US Treasury daily par yield curve rates";
+  let rows = [];
+  try { rows = await get(year); if (rows.length && rows.length <= back) rows = rows.concat(await get(year - 1)); } catch {}
+  if (!rows.length) {
+    // Fallback: FRED public CSV of the same Treasury constant-maturity series (usually one business day behind).
+    const S = [["DGS1MO", "1 Mo"], ["DGS3MO", "3 Mo"], ["DGS6MO", "6 Mo"], ["DGS1", "1 Yr"], ["DGS2", "2 Yr"], ["DGS5", "5 Yr"], ["DGS10", "10 Yr"], ["DGS20", "20 Yr"], ["DGS30", "30 Yr"]];
+    const since = new Date(Date.now() - (back * 2 + 20) * 86400000).toISOString().slice(0, 10);
+    try {
+      const r = await fetch(`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${S.map((x) => x[0]).join(",")}&cosd=${since}`, { headers: { "user-agent": "finch-agent-catalog" } });
+      if (r.ok) {
+        const lines = (await r.text()).trim().split(/\r?\n/).slice(1);
+        rows = lines.map((l) => { const c = l.split(","); const o = { date: c[0] }; S.forEach(([, t], i) => { const v = c[i + 1]; o[t] = v === "" || v === "." || v === undefined ? null : Number(v); }); return o; })
+          .filter((o) => S.some(([, t]) => o[t] != null)).reverse();
+        source = "US Treasury constant-maturity yields via FRED (St. Louis Fed)";
+      }
+    } catch {}
+  }
+  if (!rows.length) return { error: "US Treasury yield data is unavailable right now. Try again later." };
   const [latest, prior] = [rows[0], rows[Math.min(back, rows.length - 1)]];
   const tenors = Object.keys(latest).filter((k) => k !== "date");
   const curve = tenors.filter((t) => latest[t] != null).map((t) => ({ tenor: t, yield_pct: latest[t], change_bp: prior[t] != null ? Math.round((latest[t] - prior[t]) * 100) : null }));
@@ -271,7 +286,7 @@ async function treasuryCurve(args) {
   const out = {
     as_of: latest.date, compared_with: prior.date, curve,
     spreads_bp: { "2y_10y": sp("2 Yr", "10 Yr"), "3m_10y": sp("3 Mo", "10 Yr") },
-    source: "US Treasury daily par yield curve rates", url: "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve",
+    source, url: "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve",
     note: "Negative spread means that part of the curve is inverted. Data only, not investment advice.",
   };
   try {
